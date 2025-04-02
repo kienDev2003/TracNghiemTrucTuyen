@@ -1,0 +1,79 @@
+﻿<%@ Master Language="C#" AutoEventWireup="true" CodeBehind="Layout.master.cs" Inherits="TracNghiemTrucTuyen.Views.home.Layout" %>
+
+<!DOCTYPE html>
+
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+    <title>Student Information
+    </title>
+    <script src="https://cdn.tailwindcss.com">
+    </script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css" rel="stylesheet" />
+    <style>
+        footer {
+            position: fixed;
+            bottom: 0;
+            width: 100%;
+        }
+    </style>
+</head>
+<body class="bg-gray-100">
+    <form id="form2" runat="server">
+        <header class="bg-green-600 text-white p-4">
+            <div class="container mx-auto flex items-center justify-center">
+                <i class="fas fa-home mr-2"></i>
+                <h1 class="text-lg font-bold">HỆ THỐNG THI TRẮC NGHIỆM TRỰC TUYẾN
+                </h1>
+            </div>
+        </header>
+        <div class="flex flex-col lg:flex-row">
+            <!-- Sidebar -->
+            <div class="bg-gray-100 text-green-500 w-full lg:w-1/4 p-4">
+                <div class="bg-white text-black p-4 rounded-lg shadow-md">
+                    <div class="flex items-center cursor-pointer" id="avatar">
+                        <img alt="Profile picture of the student" class="w-16 h-16 rounded-full" height="100" src="https://storage.googleapis.com/a1aa/image/AiEJ_7qeAVqqKlpsbZKghAufu_YazYioW6oz2wz6H-U.jpg" width="100" />
+                        <div class="ml-4">
+                            <p class="font-bold" id="txt_tai_khoan" runat="server">
+                            </p>
+                            <p id="txt_ho_ten" runat="server">
+                            </p>
+                        </div>
+                    </div>
+                    <button class="mt-4 bg-yellow-500 text-white py-2 px-4 rounded-lg w-full" id="btn_logout" runat="server" onserverclick="btn_logout_ServerClick">
+                        Đăng xuất
+                    </button>
+                    <button class="mt-2 text-blue-500 w-full" id="btn_change_password" runat="server" onserverclick="btn_change_password_ServerClick">
+                        Đổi mật khẩu
+                    </button>
+                </div>
+                <div class="mt-4 bg-white p-4 rounded-lg shadow-md">
+                    <h2 class="font-bold text-green-500">TÍNH NĂNG
+                    </h2>
+                    <ul class="mt-2 text-sm" id="userFeature" runat="server">
+                    </ul>
+                </div>
+            </div>
+            <!-- Main Content -->
+            <asp:ContentPlaceHolder ID="main" runat="server">
+            </asp:ContentPlaceHolder>
+        </div>
+        <footer class="bg-green-600 text-white p-4 mt-4">
+            <div class="container mx-auto text-center">
+                <p class="text-sm">
+                    Copyright © 2020 HỌC VIỆN NÔNG NGHIỆP VIỆT NAM
+                </p>
+            </div>
+        </footer>
+        <script>
+            document.addEventListener('DOMContentLoaded', function () {
+                // Cập nhật năm hiện tại vào footer
+                const footerText = document.querySelector("footer p");
+                const currentYear = new Date().getFullYear();
+                footerText.innerHTML = `Copyright © ${currentYear} HỌC VIỆN NÔNG NGHIỆP VIỆT NAM`;
+            });
+        </script>
+    </form>
+</body>
+</html>
