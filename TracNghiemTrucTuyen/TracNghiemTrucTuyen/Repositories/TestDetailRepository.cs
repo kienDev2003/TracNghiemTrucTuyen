@@ -38,5 +38,25 @@ namespace TracNghiemTrucTuyen.Repositories
                 }
             }
         }
+
+        public void AddTestDetail(Models.Response.TestDetailResponse testDetail)
+        {
+            string procName = "AddTestDetail";
+
+            using (SqlConnection conn = _createConnection.Create())
+            {
+                conn.Open();
+
+                using (SqlCommand cmd = new SqlCommand(procName, conn))
+                {
+                    cmd.CommandType = CommandType.StoredProcedure;
+
+                    cmd.Parameters.AddWithValue("@questionID", testDetail.QuestionID);
+                    cmd.Parameters.AddWithValue("@testID", testDetail.TestID);
+
+                    cmd.ExecuteNonQuery();
+                }
+            }
+        }
 	}
 }

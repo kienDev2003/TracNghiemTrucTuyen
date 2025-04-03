@@ -57,5 +57,10 @@ namespace TracNghiemTrucTuyen.Services
 
             return test;
         }
+
+        public int AddTestReturnID(Models.Request.ExamRequest examRequest)
+        {
+            return _testRepository.AddTestReturnID(examRequest);
+        }
     }
 }

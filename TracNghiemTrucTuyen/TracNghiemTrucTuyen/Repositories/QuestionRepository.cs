@@ -38,5 +38,37 @@ namespace TracNghiemTrucTuyen.Repositories
                 }
             }
         }
+
+        public int AddQuestionReturnID(Models.Request.QuestionRequest question)
+        {
+            string procName = "AddQuestion";
+
+            using (SqlConnection conn = _createConnection.Create())
+            {
+                conn.Open();
+
+                using (SqlCommand cmd = new SqlCommand(procName, conn))
+                {
+                    cmd.CommandType = CommandType.StoredProcedure;
+
+                    cmd.Parameters.AddWithValue("@_Content", question._Content);
+                    cmd.Parameters.AddWithValue("@subjectID", question.SubjectID);
+                    cmd.Parameters.AddWithValue("@isFromExam", question.IsFromExam);
+                    cmd.Parameters.AddWithValue("@questionType", question.QuestionType);
+                    cmd.Parameters.AddWithValue("@questionImage", question.Image);
+
+
+                    SqlParameter outputIdParam = new SqlParameter("@questionID", SqlDbType.Int)
+                    {
+                        Direction = ParameterDirection.Output
+                    };
+                    cmd.Parameters.Add(outputIdParam);
+
+                    cmd.ExecuteNonQuery();
+
+                    return Convert.ToInt32(outputIdParam.Value);
+                }
+            }
+        }
     }
 }

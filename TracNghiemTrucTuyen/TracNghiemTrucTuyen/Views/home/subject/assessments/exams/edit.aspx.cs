@@ -1,6 +1,8 @@
 ﻿using Newtonsoft.Json;
 using System;
+using System.CodeDom;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Web;
 using System.Web.Services;
@@ -17,7 +19,7 @@ namespace TracNghiemTrucTuyen.Views.home.subject.assessments.exams
 		{
 			if (Request.QueryString["testID"] != null)
 			{
-				//LoadContentTestByID(Convert.ToInt32(Request.QueryString["testID"]));
+				
 			}
 		}
 
@@ -61,6 +63,60 @@ namespace TracNghiemTrucTuyen.Views.home.subject.assessments.exams
             };
 
             return ExamData;
+        }
+
+        [WebMethod]
+        public static object AddTest(Models.Request.ExamRequest examRequest)
+        {
+            Models.Response.AccountResponse account = HttpContext.Current.Session["Account"] as Models.Response.AccountResponse;
+            string subjectID = HttpContext.Current.Request.QueryString["subjectid"];
+            Models.Response.TeacherResponse teacher = new TeacherResponse();
+            Models.Response.TestDetailResponse testDetail = new TestDetailResponse();
+
+            UserService userService = new UserService();
+            TestService testService = new TestService();
+            QuestionService questionService = new QuestionService();
+            AnswerService answerService = new AnswerService();
+            TestDetailService testDetailService = new TestDetailService();
+
+            try
+            {
+                teacher = userService.GetUserInforByAccount(account) as Models.Response.TeacherResponse;
+
+                examRequest.SetterID = teacher.TeacherID;
+                examRequest.CreateDate = DateTime.Now;
+                examRequest.SubjectID = subjectID;
+
+                int testID = testService.AddTestReturnID(examRequest);
+
+                foreach (Models.Request.QuestionRequest question in examRequest.Questions)
+                {
+                    question.SubjectID = subjectID;
+                    question.IsFromExam = true;
+
+                    int questionID = questionService.AddQuestionReturnID(question);
+
+                    testDetail.QuestionID = questionID;
+                    testDetail.TestID = testID;
+
+                    testDetailService.AddTestDetail(testDetail);
+
+                    foreach (Models.Request.AnswerRequest answer in question.Answers)
+                    {
+                        answer.QuestionID = questionID;
+
+                        answerService.AddAnswer(answer);
+                    }
+                }
+
+                return new { status="ok",message=""};
+
+            }
+            catch (Exception ex)
+            {
+                return new { status = "error", message = ex.Message };
+            }
+            
         }
     }
 }

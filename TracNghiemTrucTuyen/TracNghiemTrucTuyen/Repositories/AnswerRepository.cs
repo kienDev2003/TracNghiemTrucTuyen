@@ -38,5 +38,26 @@ namespace TracNghiemTrucTuyen.Repositories
                 }
             }
         }
+
+        public void AddAnswer(Models.Request.AnswerRequest answer)
+        {
+            string procName = "AddAnswer";
+
+            using (SqlConnection conn = _createConnection.Create())
+            {
+                conn.Open();
+
+                using (SqlCommand cmd = new SqlCommand(procName, conn))
+                {
+                    cmd.CommandType = CommandType.StoredProcedure;
+
+                    cmd.Parameters.AddWithValue("@_Content", answer._Content);
+                    cmd.Parameters.AddWithValue("@isTrue", answer.IsTrue);
+                    cmd.Parameters.AddWithValue("@questionID", answer.QuestionID);
+
+                    cmd.ExecuteNonQuery();
+                }
+            }
+        }
     }
 }

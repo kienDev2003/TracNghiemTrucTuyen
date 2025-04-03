@@ -34,5 +34,10 @@ namespace TracNghiemTrucTuyen.Services
 
             return question;
         }
+
+        public int AddQuestionReturnID(Models.Request.QuestionRequest question)
+        {
+            return _questionRepository.AddQuestionReturnID(question);
+        }
     }
 }

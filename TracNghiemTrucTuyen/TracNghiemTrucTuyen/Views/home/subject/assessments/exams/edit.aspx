@@ -201,7 +201,7 @@
                 const imageFile = imageInput.files[0];
 
                 const question = {
-                    content: questionContent,
+                    _content: questionContent,
                     image: "",
                     questionType: questionType,
                     answers: []
@@ -222,7 +222,7 @@
                 if (questionType === 'essay') {
                     const essayAnswer = questionElem.querySelector('.essay-answer').value;
                     question.answers.push({
-                        content: essayAnswer,
+                        _content: essayAnswer,
                         isTrue: true
                     });
                 } else {
@@ -231,7 +231,7 @@
                         const isCorrect = answerElem.querySelector('input[type="checkbox"], input[type="radio"]').checked;
 
                         question.answers.push({
-                            content: answerContent,
+                            _content: answerContent,
                             isTrue: isCorrect
                         });
                     });
@@ -249,7 +249,8 @@
         function saveExamData(questions) {
             const examName = document.getElementById("exam-name").value;
             const examDuration = document.getElementById("exam-time").value;
-            const subjectID = urlParams.get('SubjectID');
+            const urlParams = new URLSearchParams(window.location.search);
+            const subjectid = urlParams.get('subjectID');
 
             const examData = {
                 Name: examName,
@@ -257,15 +258,19 @@
                 Questions: questions
             };
 
-            fetch('./edit.aspx/AddTest', {
+            fetch(`./edit.aspx/AddTest?subjectID=${subjectid}`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ examData: examData })
+                body: JSON.stringify({ examRequest: examData })
             })
-                .then(response => response.json())
+                .then(response => console.log(response))
                 .then(data => {
-                    if (data === 'ok') {
+                    if (data.d.status === 'ok') {
                         alert('Tạo đề thi thành công !');
+                        window.location.href = `./?subjectID=${subjectid}`;
+                    }
+                    else {
+                        console.log(data.d.message);
                     }
                 });
         }
@@ -281,114 +286,60 @@
             document.getElementById('number-question').innerText = `Số câu hỏi: ${numberQuestion}`;
 
             examData.Questions.forEach(question => {
-                const questionElement = createQuestionElement(question);
-                questionContainer.appendChild(questionElement);
-            });
-        }
+                // Sử dụng createQuestionForm thay vì createQuestionElement
+                const questionElement = createQuestionForm();
 
-        function createQuestionElement(questionData) {
-            const questionElement = document.createElement('div');
-            questionElement.classList.add('bg-white', 'p-6', 'rounded-lg', 'shadow-lg', 'border-t-8', 'border-green-700', 'question-form', 'relative');
+                // Thiết lập nội dung câu hỏi
+                questionElement.querySelector('.question-content').value = question.content || '';
 
-            const questionForm = document.createElement('form');
+                // Thiết lập loại câu hỏi
+                const questionTypeSelect = questionElement.querySelector('.question-type');
+                questionTypeSelect.value = question.questionType;
 
-            const questionContentDiv = document.createElement('div');
-            questionContentDiv.classList.add('mb-4');
-            questionContentDiv.innerHTML = `
-        <label class="block text-lg font-medium text-gray-700">Nội dung câu hỏi</label>
-        <div class="flex items-center gap-2">
-            <input type="text" class="w-full px-3 py-2 border rounded-md focus:ring focus:ring-blue-300 question-content" 
-                   placeholder="Nhập nội dung câu hỏi" value="${questionData.content || ''}">
-            <input type="file" class="hidden image-input" accept="image/*">
-            <button type="button" class="p-2 border rounded hover:bg-gray-200 image-button">📷</button>
-        </div>
-    `;
-
-            const imageElement = document.createElement('img');
-            imageElement.classList.add('max-w-full', 'rounded-lg', 'question-image');
-            imageElement.style.cssText = 'width: 400px; height: 300px; object-fit: contain;';
-
-            if (questionData.image && questionData.image !== '') {
-                imageElement.src = questionData.image;
-                imageElement.classList.remove('hidden');
-            } else {
-                imageElement.classList.add('hidden');
-            }
-
-            questionContentDiv.appendChild(imageElement);
-            questionForm.appendChild(questionContentDiv);
-
-            const questionTypeDiv = document.createElement('div');
-            questionTypeDiv.classList.add('mb-4');
-            questionTypeDiv.innerHTML = `
-        <label class="block text-lg font-medium text-gray-700">Kiểu câu hỏi</label>
-        <select class="question-type w-full px-3 py-2 border rounded-md focus:ring focus:ring-blue-300">
-            <option value="multiple" ${questionData.questionType === 'multiple' ? 'selected' : ''}>Multiple Choice</option>
-            <option value="single" ${questionData.questionType === 'single' ? 'selected' : ''}>One Choice</option>
-            <option value="essay" ${questionData.questionType === 'essay' ? 'selected' : ''}>Essay</option>
-        </select>
-    `;
-            questionForm.appendChild(questionTypeDiv);
-
-            const answerSection = document.createElement('div');
-            answerSection.classList.add('answer-section');
-
-            const answerList = document.createElement('div');
-            answerList.classList.add('answer-list', 'space-y-2');
-
-            if (questionData.questionType === 'essay') {
-                answerSection.classList.add('hidden');
-
-                const essayTextarea = document.createElement('textarea');
-                essayTextarea.classList.add('w-full', 'mt-2', 'p-2', 'border', 'rounded-md', 'focus:ring', 'focus:ring-blue-300', 'essay-answer');
-                essayTextarea.placeholder = 'Nhập câu trả lời...';
-
-                if (questionData.answers && questionData.answers.length > 0) {
-                    essayTextarea.value = questionData.answers[0].content || '';
+                // Xử lý hiển thị ảnh nếu có
+                if (question.image && question.image !== '') {
+                    const imageElement = questionElement.querySelector('.question-image');
+                    imageElement.src = question.image;
+                    imageElement.classList.remove('hidden');
                 }
 
-                questionForm.appendChild(essayTextarea);
-            } else {
-                if (questionData.answers && questionData.answers.length > 0) {
-                    const inputType = questionData.questionType === 'single' ? 'radio' : 'checkbox';
+                // Xử lý phần đáp án tùy thuộc vào loại câu hỏi
+                if (question.questionType === 'essay') {
+                    const answerSection = questionElement.querySelector('.answer-section');
+                    const essayAnswer = questionElement.querySelector('.essay-answer');
+
+                    answerSection.classList.add('hidden');
+                    essayAnswer.classList.remove('hidden');
+
+                    if (question.answers && question.answers.length > 0) {
+                        essayAnswer.value = question.answers[0].content || '';
+                    }
+                } else {
+                    const answerList = questionElement.querySelector('.answer-list');
                     const nameAttr = `answer-${Date.now()}`;
 
-                    questionData.answers.forEach(answer => {
-                        const answerElement = document.createElement('div');
-                        answerElement.classList.add('flex', 'items-center', 'gap-2', 'mt-2');
-                        answerElement.innerHTML = `
-                    <input type="text" class="w-full px-3 py-2 border rounded-md focus:ring focus:ring-blue-300" 
-                           placeholder="Nhập đáp án" value="${answer.content || ''}">
-                    <input type="${inputType}" class="w-5 h-5 answer-check" name="${nameAttr}" ${answer.isTrue ? 'checked' : ''}>
-                    <button type="button" class="delete-answer text-red-600 hover:text-red-800">🗑</button>
-                `;
-                        answerList.appendChild(answerElement);
-                    });
+                    if (question.answers && question.answers.length > 0) {
+                        question.answers.forEach(answer => {
+                            const answerElement = document.createElement('div');
+                            answerElement.classList.add('flex', 'items-center', 'gap-2', 'mt-2');
+
+                            const inputType = question.questionType === 'single' ? 'radio' : 'checkbox';
+                            answerElement.innerHTML = `
+                        <input type="text" class="w-full px-3 py-2 border rounded-md focus:ring focus:ring-blue-300" 
+                               placeholder="Nhập đáp án" value="${answer.content || ''}">
+                        <input type="${inputType}" class="w-5 h-5 answer-check" name="${nameAttr}" ${answer.isTrue ? 'checked' : ''}>
+                        <button type="button" class="delete-answer text-red-600 hover:text-red-800">🗑</button>
+                    `;
+
+                            answerList.appendChild(answerElement);
+                        });
+                    }
                 }
 
-                answerSection.appendChild(answerList);
+                questionContainer.appendChild(questionElement);
+            });
 
-                const addAnswerButton = document.createElement('button');
-                addAnswerButton.type = 'button';
-                addAnswerButton.classList.add('add-answer', 'mt-2', 'flex', 'items-center', 'gap-1', 'text-blue-600', 'hover:text-blue-800');
-                addAnswerButton.innerHTML = '➕ Thêm đáp án';
-                answerSection.appendChild(addAnswerButton);
-
-                questionForm.appendChild(answerSection);
-            }
-
-            const deleteButtonDiv = document.createElement('div');
-            deleteButtonDiv.classList.add('mt-4', 'text-right');
-            deleteButtonDiv.innerHTML = `
-        <button type="button" class="delete-question text-red-600 hover:text-red-800">
-            🗑 Xóa câu hỏi
-        </button>
-    `;
-            questionForm.appendChild(deleteButtonDiv);
-
-            questionElement.appendChild(questionForm);
-
-            return questionElement;
+            handleReadOnlyMode();
         }
 
         // Thêm sự kiện khi trang đã load
@@ -396,7 +347,6 @@
             const urlParams = new URLSearchParams(window.location.search);
             const testID = urlParams.get('testid');
             if (testID) {
-                console.log('ok');
                 fetch('./edit.aspx/LoadContentTestByID', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
@@ -404,12 +354,9 @@
                 })
                     .then(response => response.json())
                     .then(data => {
-                        console.log(data.d);
                         renderExamFromData(data.d);
                     });
             }
-
-            handleReadOnlyMode();
         });
     </script>
 </body>

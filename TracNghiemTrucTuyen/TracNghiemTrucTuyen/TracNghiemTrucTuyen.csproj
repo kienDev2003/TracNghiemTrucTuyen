@@ -83,7 +83,10 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Database\CreateConnection.cs" />
+    <Compile Include="Models\Request\AnswerRequest.cs" />
+    <Compile Include="Models\Request\ExamRequest.cs" />
     <Compile Include="Models\Request\LoginRequest.cs" />
+    <Compile Include="Models\Request\QuestionRequest.cs" />
     <Compile Include="Models\Response\AccountResponse.cs" />
     <Compile Include="Models\Response\AnswerResponse.cs" />
     <Compile Include="Models\Response\ExamResponse.cs" />

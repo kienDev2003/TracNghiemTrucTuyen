@@ -35,5 +35,10 @@ namespace TracNghiemTrucTuyen.Services
 			return questions;
 
         }
+
+		public void AddTestDetail(Models.Response.TestDetailResponse testDetail)
+		{
+			_testDetailRepository.AddTestDetail(testDetail);
+		}
 	}
 }
